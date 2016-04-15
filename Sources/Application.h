@@ -9,6 +9,7 @@
 #define SOURCES_APPLICATION_H_
 
 void APP_Run(void);
+void logAccData(void);
 
 
 

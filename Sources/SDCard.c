@@ -59,6 +59,7 @@ void startLog(void){
   if (FAT1_lseek(&fp, fp.fsize) != FR_OK || fp.fptr != fp.fsize) {
 	Err();
   }
+  TI2_Enable();				/* Enable the 1ms counter */
 }
 
 void stopLog(void){

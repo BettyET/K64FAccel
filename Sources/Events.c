@@ -41,6 +41,8 @@ extern "C" {
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 #include "H3LIS331DL.h"
+#include "Application.h"
+#include "SDCard.h"
 int32_t counter = 0;
 
 /*
@@ -232,8 +234,13 @@ void TI1_OnInterrupt(void)
 */
 void TI2_OnInterrupt(void)
 {
-
   counter += 1;
+  logAccData();
+  if(counter>(60000-1)){
+	  stopLog();
+	  TI2_Disable();
+	  LED_G_Off();
+  }
 }
 
 /* END Events */
