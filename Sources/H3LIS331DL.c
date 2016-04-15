@@ -102,7 +102,6 @@ void configRange(void){
 
 int16_t getRawData(void){
 	uint8_t res;
-	WAIT1_Waitms(10);
 	res = H3LI_ReadReg(OUT_Z_L_MSB, (int8_t*)&accelZ, 2);
 	if (res != ERR_OK){
 			LED_G_On();							/* error */

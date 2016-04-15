@@ -30,7 +30,8 @@ void APP_Run(void){
 	      Err();
 	  }
 	  initH3LI(); 			/* init accelerometer */
-	  for(;;){
+	  startLog();			/* start the logger */
+	  for(int i=100; i>0; i--){
 		  z = getAccData();
 		  LogToFile(x, y, z);
 		  if ((z>337) || (z< -337)){
@@ -39,8 +40,9 @@ void APP_Run(void){
 		  else{
 			  LED_G_Off();
 		  }
-		  WAIT1_Waitms(10);
 	  }
+	  stopLog();
+	  LED_G_Off();
 }
 
 static void Err(void) {

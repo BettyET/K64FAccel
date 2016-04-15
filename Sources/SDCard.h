@@ -11,6 +11,8 @@
 #include "FAT1.h"
 
 void LogToFile(int16_t x, int16_t y, int16_t z);
+void startLog(void);
+void stopLog(void);
 
 static FAT1_FATFS fileSystemObject;
 static FIL fp;
