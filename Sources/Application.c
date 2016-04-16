@@ -10,9 +10,7 @@
 #include "LED_G.h"
 #include "PORT_PDD.h"
 #include "H3LIS331DL.h"
-
-/* Prototype */
-static void Err(void);
+#include "Error.h"
 
 int16_t z = 0;
 int16_t x = 0;
@@ -44,6 +42,3 @@ void logAccData(void){
 	  }
 }
 
-static void Err(void) {
-  LED_G_On();				/* Error */
-}

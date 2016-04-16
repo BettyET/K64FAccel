@@ -13,37 +13,22 @@
 #include "LED_G.h"
 #include "H3LIS331DL.h"
 #include "Events.h"
-/* Prototype */
-static void Err(void);
+#include "Error.h"
 
  void LogToFile(int16_t x, int16_t y, int16_t z) {
   uint8_t write_buf[24];
   UINT bw;
-  TIMEREC time;
 
-
-  /* get time */
-//  if (TmDt1_GetTime(&time)!=ERR_OK) {
-//    Err();
-//  }
   /* write data */
   write_buf[0] = '\0';
-//  UTIL1_strcatNum8u(write_buf, sizeof(write_buf), time.Hour);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), ':');
-//  UTIL1_strcatNum8u(write_buf, sizeof(write_buf), time.Min);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), ':');
-//  UTIL1_strcatNum8u(write_buf, sizeof(write_buf), time.Sec);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
 
   UTIL1_strcatNum32u(write_buf, sizeof(write_buf), counter);
   UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
 
-//  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), x);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
-//  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), y);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
+
   UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
   UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
+
   if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
     (void)FAT1_close(&fp);
     Err();
@@ -66,8 +51,4 @@ void stopLog(void){
   /* closing file */
   (void)FAT1_close(&fp);
 }
-static void Err(void) {
-  LED_G_On();				/* Error */
-  for(;;){
-  }
-}
+
