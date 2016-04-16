@@ -17,7 +17,7 @@
 static void Err(void);
 
  void LogToFile(int16_t x, int16_t y, int16_t z) {
-  uint8_t write_buf[48];
+  uint8_t write_buf[24];
   UINT bw;
   TIMEREC time;
 

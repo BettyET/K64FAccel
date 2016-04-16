@@ -234,9 +234,9 @@ void TI1_OnInterrupt(void)
 */
 void TI2_OnInterrupt(void)
 {
-  counter += 1;
+  counter += 5;
   logAccData();
-  if(counter>(60000-1)){
+  if(counter>(30000-1)){
 	  stopLog();
 	  TI2_Disable();
 	  LED_G_Off();
