@@ -23,33 +23,34 @@ bool dataOverrunFlag = FALSE;
 
 int16_t count_or = 0;
 
+#define MEASDUR 10000 												/* measurement duration in ms */
+
 void APP_Run(void){
 	/* SD card detection: PTE6 with pull-down! */
 	  PORT_PDD_SetPinPullSelect(PORTE_BASE_PTR, 6, PORT_PDD_PULL_DOWN);
 	  PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
 
-	  if (FAT1_Init()!=ERR_OK) { /* initialize FAT driver */
+	  if (FAT1_Init()!=ERR_OK) { 								/* initialize FAT driver */
 	      Err();
 	   }
 	  if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
 	      Err();
 	  }
-	  initH3LI(); 			/* init accelerometer */
-	  startLog();			/* start the logger */
-	  while(counter<(10000-1)){
-		  isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag);
+	  initH3LI(); 												/* init accelerometer */
+	  startLog();												/* start the logger */
+	  while(counter<((MEASDUR/TICK_MS)-1)){
+		  isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); /* check if new data available */
 		  if(newDataAvailableFlag == TRUE){
-			  logAccData();
+			  logAccData();										/* read sensor and save on SD card */
 		  }
-		  dataOverrun(Z_AXIS_OR, &dataOverrunFlag);
+		  dataOverrun(Z_AXIS_OR, &dataOverrunFlag);				/* data overrun? */
 		  if(dataOverrunFlag == TRUE){
-			  //Err();
-			  count_or++;
+			  count_or++;										/* count overruns */
 		  }
 
 	  }
-	  stopLog();			/* stop the logger */
-	  TI2_Disable();		/* disable the counter */
+	  stopLog();												/* stop the logger */
+	  TI2_Disable();											/* disable the counter */
 	  LED_G_Off();
 }
 

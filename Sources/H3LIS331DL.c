@@ -170,7 +170,7 @@ void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
 		*dataOverrun = TRUE;					/* set flag */
 	}
 	else{
-		*dataOverrun = FALSE;				/* clear flag */
+		*dataOverrun = FALSE;					/* clear flag */
 	}
 }
 
@@ -194,7 +194,7 @@ void initH3LI(void){
 	WAIT1_Waitms(10);
 	setNormalPowerMode();						/* normal power mode */
 	WAIT1_Waitms(10);
-	setRange(RANGE_100g);						/* select range 100g */
+	setRange(RANGE_100g);						/* range 100g */
 	WAIT1_Waitms(10);
 	setSamplingRate(RATE_400Hz);				/* sampling rate 100Hz */
 	WAIT1_Waitms(10);

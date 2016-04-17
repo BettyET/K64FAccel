@@ -222,6 +222,7 @@ void TI1_OnInterrupt(void);
 */
 void TI2_OnInterrupt(void);
 extern int32_t counter;
+#define TICK_MS 1
 
 /* END Events */
 
