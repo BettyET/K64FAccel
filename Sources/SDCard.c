@@ -22,8 +22,8 @@
   /* write data */
   write_buf[0] = '\0';
 
-  UTIL1_strcatNum32u(write_buf, sizeof(write_buf), counter);
-  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
+//  UTIL1_strcatNum32u(write_buf, sizeof(write_buf), counter);
+//  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
 
 
   UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);

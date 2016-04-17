@@ -57,7 +57,7 @@ void APP_Run(void){
 void logAccData(void){
 	  z = getAccData();
 	  LogToFile(x, y, z);
-	  if ((z>337) || (z< -337)){
+	  if ((z>337) || (z< -337)){								/* greater than 1g? */
 		  LED_G_On();
 	  }
 	  else{

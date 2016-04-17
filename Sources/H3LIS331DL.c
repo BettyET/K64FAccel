@@ -196,7 +196,7 @@ void initH3LI(void){
 	WAIT1_Waitms(10);
 	setRange(RANGE_100g);						/* range 100g */
 	WAIT1_Waitms(10);
-	setSamplingRate(RATE_400Hz);				/* sampling rate 100Hz */
+	setSamplingRate(RATE_100Hz);				/* sampling rate 100Hz */
 	WAIT1_Waitms(10);
 	setBlockDataUpdate();						/* block data update */
 }

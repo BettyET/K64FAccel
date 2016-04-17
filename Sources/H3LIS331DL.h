@@ -37,7 +37,7 @@ typedef enum {
 typedef enum {
 	X_AXIS_DA	= 0x01,
 	Y_AXIS_DA	= 0x02,
-	Z_AXIS_DA	 = 0x04,
+	Z_AXIS_DA	= 0x04,
 	ALL_AXES_DA	= 0x08
 }AXES_DA_t;
 

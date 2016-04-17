@@ -42,8 +42,6 @@
 #include "LED_B.h"
 #include "LEDpin3.h"
 #include "BitIoLdd3.h"
-#include "SW2.h"
-#include "BitIoLdd4.h"
 #include "EInt1.h"
 #include "ExtIntLdd1.h"
 #include "FAT1.h"
