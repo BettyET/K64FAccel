@@ -16,7 +16,7 @@
 #include "Error.h"
 
  void LogToFile(int16_t x, int16_t y, int16_t z) {
-  uint8_t write_buf[24];
+  uint8_t write_buf[48];
   UINT bw;
 
   /* write data */
@@ -50,5 +50,6 @@ void startLog(void){
 void stopLog(void){
   /* closing file */
   (void)FAT1_close(&fp);
+  TI2_Disable();
 }
 

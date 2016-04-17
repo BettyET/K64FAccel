@@ -29,15 +29,35 @@ typedef enum {
 typedef enum {
 	RATE_50Hz	= 0x00,
 	RATE_100Hz	= 0x01,
-	RATE_400Hz 	= 0x10,
-	RATE_1000Hz	= 0x11
+	RATE_400Hz 	= 0x02,
+	RATE_1000Hz	= 0x03
 }SRATE_t;
+
+/* Axis for new data flag */
+typedef enum {
+	X_AXIS_DA	= 0x01,
+	Y_AXIS_DA	= 0x02,
+	Z_AXIS_DA	 = 0x04,
+	ALL_AXES_DA	= 0x08
+}AXES_DA_t;
+
+/* Axis for data overrun flag */
+typedef enum {
+	X_AXIS_OR	= 0x01,
+	Y_AXIS_OR	= 0x02,
+	Z_AXIS_OR 	= 0x04,
+	ALL_AXES_OR	= 0x08
+}AXES_OR_t;
 
 /* Driver Functions */
 
 int16_t getRawData(void);
 int16_t getAccData(void);
+
 void initH3LI(void);
+
+void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable);
+void dataOverrun(AXES_OR_t ax, bool *dataOverrun);
 
 H3LI_TDataState deviceData;
 

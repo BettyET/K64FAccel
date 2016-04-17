@@ -13,10 +13,13 @@
 #include "WAIT1.h"
 #include "PE_Types.h"
 
-/* Device Adress */
+/* Device adress */
 #define DEV_ADD 0x18
 /* Device identification register */
 #define WHO_AM_I 0x0F
+
+/* Status register */
+#define STATUS_REG 0x27			/* Status register */
 
 /* External 3-axis accelerometer control register addresses */
 #define CTRL_REG_1 0x20
@@ -139,6 +142,38 @@ void setBlockDataUpdate(void){
 	}
 }
 
+void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable){
+	uint8_t res;
+	uint8_t reg;
+	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
+	if (res != ERR_OK){
+		Err();									/* error */
+	}
+	reg &= ax;									/* mask */
+	if(reg == ax){
+		*newDataAvailable = TRUE;				/* set flag */
+	}
+	else{
+		*newDataAvailable = FALSE;				/* clear flag */
+	}
+}
+
+void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
+	uint8_t res;
+	uint8_t reg;
+	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
+	if (res != ERR_OK){
+		Err();									/* error */
+	}
+	reg &= (ax<<4);								/* mask */
+	if(reg == (ax<<4)){
+		*dataOverrun = TRUE;					/* set flag */
+	}
+	else{
+		*dataOverrun = FALSE;				/* clear flag */
+	}
+}
+
 int16_t getRawData(void){
 	uint8_t res;
 	res = H3LI_ReadReg(OUT_Z_L_MSB, (int8_t*)&accelZ, 2);
@@ -161,7 +196,7 @@ void initH3LI(void){
 	WAIT1_Waitms(10);
 	setRange(RANGE_100g);						/* select range 100g */
 	WAIT1_Waitms(10);
-	setSamplingRate(RATE_100Hz);				/* sampling rate 100Hz */
+	setSamplingRate(RATE_400Hz);				/* sampling rate 100Hz */
 	WAIT1_Waitms(10);
 	setBlockDataUpdate();						/* block data update */
 }
