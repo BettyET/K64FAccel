@@ -8,10 +8,14 @@
 
 #include "Timer.h"
 #include "PE_Types.h"
+#include "TmDt1.h"
 
 int32_t counter = 0;
 
 void TMR_OnInterrupt(void)
 {
 	counter++;
+	if((counter%10)==0){
+		TmDt1_AddTick();
+	}
 }

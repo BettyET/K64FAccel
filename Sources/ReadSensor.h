@@ -11,5 +11,8 @@
 
 void ReadAccelSensorTask(void *pvParameters);
 
+extern bool loggingEnabledFlag;
+
+
 
 #endif /* SOURCES_READSENSOR_H_ */

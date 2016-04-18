@@ -14,26 +14,9 @@
 #include "H3LIS331DL.h"
 #include "Events.h"
 #include "Error.h"
+#include "ReadSensor.h"
+#include "Queue.h"
 
- void LogToFile(int16_t x, int16_t y, int16_t z) {
-  uint8_t write_buf[48];
-  UINT bw;
-
-  /* write data */
-  write_buf[0] = '\0';
-
-//  UTIL1_strcatNum32u(write_buf, sizeof(write_buf), counter);
-//  UTIL1_chcat(write_buf, sizeof(write_buf), '\t');
-
-
-  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
-  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
-
-  if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
-    (void)FAT1_close(&fp);
-    Err();
-  }
-}
 
 void startLog(void){
   /* open file */
@@ -48,24 +31,49 @@ void startLog(void){
 
 void stopLog(void){
   /* closing file */
-  (void)FAT1_close(&fp);
+	loggingEnabledFlag = FALSE;
+	LED_G_Off();
+	(void)FAT1_close(&fp);
 }
 
 void SaveValuesSDTask(void *pvParameters){
+	uint8_t write_buf[1024];
+	static int i=0;
+	int16_t z;
+	UINT bw;
+
+	/* write data */
+	write_buf[0] = '\0';
 
 	/* SD card detection: PTE6 with pull-down! */
 	PORT_PDD_SetPinPullSelect(PORTE_BASE_PTR, 6, PORT_PDD_PULL_DOWN);
 	PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
 
-	if (FAT1_Init()!=ERR_OK) { 								/* initialize FAT driver */
+	if (FAT1_Init()!=ERR_OK) { 											/* initialize FAT driver */
 	  Err();
 	}
 	if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
 	  Err();
 	}
 
+	startLog();
+
+
 	while(1)
 	{
-
+		/* buffer data */
+		while(i<200){
+			  if(z=DATAQUEUE_ReadValue()){
+				  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
+				  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
+				  i++;
+			  }
+		  }
+		i=0;								/* set counter to 0 */
+		/* write data down */
+		if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
+			(void)FAT1_close(&fp);
+			Err();
+		}
 	}
 }

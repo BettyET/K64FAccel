@@ -172,9 +172,10 @@ void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr)
 */
 void EInt1_OnInterrupt(void)
 {
-	WAIT1_Waitms(10);			/* debounce */
-	if(EInt1_GetVal()== 0){		/* still pressed? */
-		calibrateH3LI();		/* do calibration */
+	FRTOS1_vTaskDelay(100);		/* debounce */
+	if(EInt1_GetVal()== 0){						/* still pressed? */
+		//calibrateH3LI();						/* do calibration */
+		stopLog();
 	}
 }
 

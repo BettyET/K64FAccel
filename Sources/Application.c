@@ -9,11 +9,13 @@
 #include "Error.h"
 #include "PE_Types.h"
 #include "RTOS.h"
+#include "Queue.h"
 
 
 
 
 void APP_Init(void){
+	DATAQUEUE_Init();
 	RTOS_Run();
 }
 
