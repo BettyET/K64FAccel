@@ -17,6 +17,6 @@ void stopLog(void);
 static FAT1_FATFS fileSystemObject;
 static FIL fp;
 
-
+void SaveValuesSDTask(void *pvParameters);
 
 #endif /* SOURCES_SDCARD_H_ */

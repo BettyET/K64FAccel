@@ -8,6 +8,7 @@
 #ifndef SOURCES_ERROR_H_
 #define SOURCES_ERROR_H_
 
+#include "LED_G.h"
 /* turn LED on, remain in loop */
 
 static void Err(void) {

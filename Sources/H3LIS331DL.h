@@ -59,6 +59,7 @@ void initH3LI(void);
 void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable);
 void dataOverrun(AXES_OR_t ax, bool *dataOverrun);
 
+
 H3LI_TDataState deviceData;
 
 

@@ -44,12 +44,28 @@ void startLog(void){
   if (FAT1_lseek(&fp, fp.fsize) != FR_OK || fp.fptr != fp.fsize) {
 	Err();
   }
-  TI2_Enable();				/* Enable the 1ms counter */
 }
 
 void stopLog(void){
   /* closing file */
   (void)FAT1_close(&fp);
-  TI2_Disable();
 }
 
+void SaveValuesSDTask(void *pvParameters){
+
+	/* SD card detection: PTE6 with pull-down! */
+	PORT_PDD_SetPinPullSelect(PORTE_BASE_PTR, 6, PORT_PDD_PULL_DOWN);
+	PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
+
+	if (FAT1_Init()!=ERR_OK) { 								/* initialize FAT driver */
+	  Err();
+	}
+	if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
+	  Err();
+	}
+
+	while(1)
+	{
+
+	}
+}

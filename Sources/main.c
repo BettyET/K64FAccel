@@ -50,12 +50,10 @@
 #include "CD1.h"
 #include "UTIL1.h"
 #include "TmDt1.h"
+#include "FRTOS1.h"
 #include "TMOUT1.h"
 #include "CS1.h"
 #include "SM1.h"
-#include "TI2.h"
-#include "TimerIntLdd2.h"
-#include "TU2.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"
@@ -79,7 +77,7 @@ int main(void)
   /* Write your code here */
 
 
-   APP_Run();
+   APP_Init();
 
    for(;;) {
 

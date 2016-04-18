@@ -200,3 +200,4 @@ void initH3LI(void){
 	WAIT1_Waitms(10);
 	setBlockDataUpdate();						/* block data update */
 }
+
