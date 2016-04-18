@@ -17,6 +17,7 @@
 #include "ReadSensor.h"
 #include "Queue.h"
 
+bool loggingEnabledFlag = FALSE;
 
 void startLog(void){
   /* open file */
@@ -29,15 +30,17 @@ void startLog(void){
   }
 }
 
-void stopLog(void){
+void setLoggingEnabled(bool flag){
   /* closing file */
-	loggingEnabledFlag = FALSE;
-	LED_G_Off();
-	(void)FAT1_close(&fp);
+	loggingEnabledFlag = flag;
+}
+
+bool isLoggingEnabled(void){
+	return loggingEnabledFlag;
 }
 
 void SaveValuesSDTask(void *pvParameters){
-	uint8_t write_buf[1024];
+	uint8_t write_buf[2048];
 	static int i=0;
 	int16_t z;
 	UINT bw;
@@ -56,24 +59,32 @@ void SaveValuesSDTask(void *pvParameters){
 	  Err();
 	}
 
-	startLog();
-
-
 	while(1)
 	{
-		/* buffer data */
-		while(i<200){
-			  if(z=DATAQUEUE_ReadValue()){
-				  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
-				  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
-				  i++;
+		if(loggingEnabledFlag){
+			/* buffer data */
+			while(i<400){
+				  if(z=DATAQUEUE_ReadValue()){
+					  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
+					  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
+					  i++;
+				  }
+				  else if(measureEnabledFlag == FALSE){		/* measurement disabled */
+					  break;								/* leafe */
+				  }
 			  }
-		  }
-		i=0;								/* set counter to 0 */
-		/* write data down */
-		if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
-			(void)FAT1_close(&fp);
-			Err();
+			/* write data down */
+			if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
+				(void)FAT1_close(&fp);
+				Err();
+			}
+			if((!DATAQUEUE_NofElements()) && (measureEnabledFlag == FALSE)){
+				(void)FAT1_close(&fp);
+				loggingEnabledFlag = FALSE;
+				LED_G_Off();
+			}
+			i=0;								/* set counter to 0 */
+			write_buf[0] = '\0';				/* reset buffer */
 		}
 	}
 }

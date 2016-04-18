@@ -44,6 +44,7 @@ extern "C" {
 #include "Application.h"
 #include "SDCard.h"
 #include "Timer.h"
+#include "ReadSensor.h"
 
 
 /*
@@ -172,10 +173,19 @@ void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr)
 */
 void EInt1_OnInterrupt(void)
 {
-	FRTOS1_vTaskDelay(100);		/* debounce */
+	FRTOS1_vTaskDelay(100);						/* debounce */
 	if(EInt1_GetVal()== 0){						/* still pressed? */
+		if(isLoggingEnabled() && isMeasurementEnabled){
+			setMeasurementEnabled(FALSE);
+			setLoggingEnabled(FALSE);
+		}
+		else if ((!isLoggingEnabled()) && (!isMeasurementEnabled())){
+			setMeasurementEnabled(TRUE);
+			setLoggingEnabled(TRUE);
+			startLog();
+		}
 		//calibrateH3LI();						/* do calibration */
-		stopLog();
+
 	}
 }
 

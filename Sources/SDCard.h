@@ -11,7 +11,8 @@
 #include "FAT1.h"
 
 void startLog(void);
-void stopLog(void);
+void setLoggingEnabled(bool flag);
+bool isLoggingEnabled(void);
 
 static FAT1_FATFS fileSystemObject;
 static FIL fp;

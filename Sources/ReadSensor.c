@@ -19,7 +19,7 @@ uint16_t count_or;
 bool newDataAvailableFlag = FALSE;
 bool dataOverrunFlag = FALSE;
 
-bool loggingEnabledFlag = TRUE;
+bool measureEnabledFlag = FALSE;
 
 void saveInMemory(int16_t value);
 
@@ -28,13 +28,13 @@ void saveInMemory(int16_t value);
 void logAccData(void);
 
 void ReadAccelSensorTask(void *pvParameters){
-	FRTOS1_vTaskDelay(10000);										/* time for SDCardTask to open a file */
+	FRTOS1_vTaskDelay(10000);										/* time for SDCardTask to mount the file system */
 	initH3LI();														/* init accelerometer */
 	TickType_t xLastWakeTime;
 	xLastWakeTime = xTaskGetTickCount();
 	while(1)
 	{
-		if(loggingEnabledFlag){
+		if(measureEnabledFlag){
 			isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); 	/* check if new data available */
 			if(newDataAvailableFlag == TRUE){
 				logAccData();										/* read sensor and save on SD card */
@@ -43,8 +43,8 @@ void ReadAccelSensorTask(void *pvParameters){
 			if(dataOverrunFlag == TRUE){
 				count_or++;											/* count overruns */
 			}
-			FRTOS1_vTaskDelayUntil(&xLastWakeTime, 10);
 		}
+		FRTOS1_vTaskDelayUntil(&xLastWakeTime, 10);
 	}
 }
 
@@ -59,3 +59,10 @@ void logAccData(void){
 	  }
 }
 
+void setMeasurementEnabled(bool flag){
+	measureEnabledFlag = flag;
+}
+
+bool isMeasurementEnabled(void){
+	return measureEnabledFlag;
+}

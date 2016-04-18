@@ -20,7 +20,7 @@ void RTOS_Init(void) {
   if (FRTOS1_xTaskCreate(ReadAccelSensorTask, (signed portCHAR *)"ReadSensor", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL) != pdPASS) {
     for(;;){} /* error */
   }
-  if (FRTOS1_xTaskCreate(SaveValuesSDTask, (signed portCHAR *)"SaveOnSDCard", configMINIMAL_STACK_SIZE+200, NULL, tskIDLE_PRIORITY, NULL) != pdPASS) {
+  if (FRTOS1_xTaskCreate(SaveValuesSDTask, (signed portCHAR *)"SaveOnSDCard", configMINIMAL_STACK_SIZE+600, NULL, tskIDLE_PRIORITY, NULL) != pdPASS) {
       for(;;){} /* error */
     }
 
