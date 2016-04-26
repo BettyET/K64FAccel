@@ -16,22 +16,33 @@
 #include "Error.h"
 #include "ReadSensor.h"
 #include "Queue.h"
+#include "calibH3LI.h"
 
 bool loggingEnabledFlag = FALSE;
+bool keyPressed = FALSE;
+
+static FAT1_FATFS fileSystemObject;
+static FIL fp;
+#if 0
+
+#endif
 
 void startLog(void){
   /* open file */
   if (FAT1_open(&fp, "./log.txt", FA_OPEN_ALWAYS|FA_WRITE)!=FR_OK) {
-	Err();
+	for(;;);
   }
   /* move to the end of the file */
   if (FAT1_lseek(&fp, fp.fsize) != FR_OK || fp.fptr != fp.fsize) {
-	Err();
+	  for(;;);
   }
+}
+void closeFile(void){
+	  /* closing file */
+	(void)FAT1_close(&fp);
 }
 
 void setLoggingEnabled(bool flag){
-  /* closing file */
 	loggingEnabledFlag = flag;
 }
 
@@ -40,7 +51,7 @@ bool isLoggingEnabled(void){
 }
 
 void SaveValuesSDTask(void *pvParameters){
-	uint8_t write_buf[2048];
+	uint8_t write_buf[512];
 	static int i=0;
 	int16_t z;
 	UINT bw;
@@ -53,17 +64,37 @@ void SaveValuesSDTask(void *pvParameters){
 	PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
 
 	if (FAT1_Init()!=ERR_OK) { 											/* initialize FAT driver */
-	  Err();
+		for(;;);
 	}
 	if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
-	  Err();
+		for(;;);
 	}
+
+	if (FRTOS1_xTaskCreate(ReadAccelSensorTask, (signed portCHAR *)"ReadSensor", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, NULL) != pdPASS) {
+	    for(;;){} /* error */
+	  }
 
 	while(1)
 	{
+		if(keyPressed){
+			vTaskDelay(10/portTICK_RATE_MS);			/* debouncing */
+			if(EInt1_GetVal()== 0){						/* still pressed? */
+					if(isLoggingEnabled() && isMeasurementEnabled){
+						setMeasurementEnabled(FALSE);
+					}
+					else if ((!isLoggingEnabled()) && (!isMeasurementEnabled())){
+						setMeasurementEnabled(TRUE);
+						setLoggingEnabled(TRUE);
+						startLog();
+					}
+				//calibrateH3LI();
+			}
+			keyPressed = FALSE;
+
+		}
 		if(loggingEnabledFlag){
 			/* buffer data */
-			while(i<400){
+			while(i<128){
 				  if(z=DATAQUEUE_ReadValue()){
 					  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
 					  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
@@ -76,8 +107,9 @@ void SaveValuesSDTask(void *pvParameters){
 			/* write data down */
 			if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
 				(void)FAT1_close(&fp);
-				Err();
+				for(;;);
 			}
+			FAT1_sync(&fp);
 			if((!DATAQUEUE_NofElements()) && (measureEnabledFlag == FALSE)){
 				(void)FAT1_close(&fp);
 				loggingEnabledFlag = FALSE;
@@ -86,5 +118,6 @@ void SaveValuesSDTask(void *pvParameters){
 			i=0;								/* set counter to 0 */
 			write_buf[0] = '\0';				/* reset buffer */
 		}
+		//vTaskDelay(1/portTICK_RATE_MS);
 	}
 }

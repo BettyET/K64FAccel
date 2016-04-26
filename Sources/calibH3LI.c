@@ -15,8 +15,8 @@
 static int16_t accelMemory[MEMORY_SIZE]={0};
 state_kinds status = START_CALIB;
 
-int16_t zerGOff = 378;				/* zero g offset, substract from raw value */
-int16_t gain = 337;					/* number of digits corresponding to 1g */
+int16_t zerGOff = 295;				/* zero g offset, substract from raw value */
+int16_t gain = 173;					/* number of digits corresponding to 1g */
 
 
 /* Prototype */
@@ -38,6 +38,7 @@ void calibrateH3LI(void){
 			WAIT1_Waitms(5000);
 			LED_G_Off();
 			for (int i=MEMORY_SIZE; i>0;i--){
+				WAIT1_Waitms(10);
 				accelMemory[i-1] = getRawData();		/* Werte speichern */
 				accelSum += (int32_t)accelMemory[i-1];		/* Werte addieren */
 			}
@@ -50,6 +51,7 @@ void calibrateH3LI(void){
 			WAIT1_Waitms(5000);
 			LED_B_Off();
 			for (int i=MEMORY_SIZE; i>0;i--){
+				WAIT1_Waitms(10);
 				accelMemory[i-1] = getRawData();		/* Werte speichern */
 				accelSum += (int32_t)accelMemory[i-1];		/* Werte addieren */
 			}

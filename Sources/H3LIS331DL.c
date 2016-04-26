@@ -75,8 +75,12 @@ void initI2C(void){
 
 void readIfImMe(void){
 	uint8_t me = 0;
+	uint8_t res;
 	/* Register lesen */
-	H3LI_ReadReg(WHO_AM_I, (uint8_t*)&me, 1);
+	res = H3LI_ReadReg(WHO_AM_I, (uint8_t*)&me, 1);
+	if (res != ERR_OK){
+			for(;;);									/* error */
+	}
 	if (me != 0x32){							/* error */
 		Err();
 	}
@@ -87,13 +91,14 @@ void setNormalPowerMode(void){
 	uint8_t reg;
 	res = H3LI_ReadReg(CTRL_REG_1,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= 0x1F;								/* mask */
 	reg |= 0x20;								/* normal power mode */
+	WAIT1_WaitOSms(1);
 	res = H3LI_WriteReg(CTRL_REG_1, reg);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 }
 
@@ -102,13 +107,14 @@ void setRange(RANGE_t rg){
 	uint8_t reg;
 	res = H3LI_ReadReg(CTRL_REG_4,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= 0xCF;								/* mask */
 	reg |= rg <<4;
+	WAIT1_WaitOSms(1);
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);								/* error */
 	}
 }
 
@@ -117,13 +123,14 @@ void setSamplingRate(SRATE_t sr){
 	uint8_t reg;
 	res = H3LI_ReadReg(CTRL_REG_1,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= 0xE7;								/* mask */
 	reg |= sr << 3;
+	WAIT1_WaitOSms(1);
 	res = H3LI_WriteReg(CTRL_REG_1, reg);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 }
 
@@ -132,13 +139,14 @@ void setBlockDataUpdate(void){
 	uint8_t reg;
 	res = H3LI_ReadReg(CTRL_REG_4,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= 0x7F;								/* mask */
 	reg |= 0x80;
+	WAIT1_WaitOSms(1);
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 }
 
@@ -147,7 +155,7 @@ void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable){
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= ax;									/* mask */
 	if(reg == ax){
@@ -163,7 +171,7 @@ void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	reg &= (ax<<4);								/* mask */
 	if(reg == (ax<<4)){
@@ -178,7 +186,7 @@ int16_t getRawData(void){
 	uint8_t res;
 	res = H3LI_ReadReg(OUT_Z_L_MSB, (int8_t*)&accelZ, 2);
 	if (res != ERR_OK){
-		Err();									/* error */
+		for(;;);									/* error */
 	}
 	return ((int16_t)accelZ[1]<<8)| ((int16_t)accelZ[0]);
 }
@@ -191,13 +199,13 @@ int16_t getAccData(void){
 void initH3LI(void){
 	initI2C();
 	readIfImMe();								/* communication correct? */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
 	setNormalPowerMode();						/* normal power mode */
-	WAIT1_Waitms(10);
-	setRange(RANGE_100g);						/* range 100g */
-	WAIT1_Waitms(10);
-	setSamplingRate(RATE_100Hz);				/* sampling rate 100Hz */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
+	setRange(RANGE_200g);						/* range 100g */
+	WAIT1_WaitOSms(10);
+	setSamplingRate(RATE_400Hz);				/* sampling rate 100Hz */
+	WAIT1_WaitOSms(10);
 	setBlockDataUpdate();						/* block data update */
 }
 

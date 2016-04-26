@@ -13,7 +13,6 @@
 
 
 
-
 void APP_Init(void){
 	DATAQUEUE_Init();
 	RTOS_Run();

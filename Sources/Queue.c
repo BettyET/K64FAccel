@@ -7,16 +7,18 @@
 
 #include "FRTOS1.h"
 #include "Error.h"
+#include "SDCard.h"
 
 static xQueueHandle DATAQUEUE_Queue;
 
-#define DATAQUEUE_LENGTH      1024 /* items in queue, that's my buffer size */
+#define DATAQUEUE_LENGTH      2048 /* items in queue, that's my buffer size */
 #define DATAQUEUE_ITEM_SIZE   sizeof(int16_t)
 
 void DATAQUEUE_SaveValue(const int16_t value) {
 	//xQueueSendToBack(SQUEUE_Queue,&str,0)
 	  if (FRTOS1_xQueueSendToBack(DATAQUEUE_Queue, &value, 0)!=pdPASS) {
-	    for(;;){} /* ups? */
+		  closeFile();
+		  for(;;){} /* ups? */
 	  }
 }
 

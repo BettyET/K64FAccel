@@ -9,6 +9,7 @@
 #include "H3LIS331DL.h"
 #include "Error.h"
 #include "Queue.h"
+#include "calibH3LI.h"
 
 int16_t z = 0;
 int16_t x = 0;
@@ -23,12 +24,9 @@ bool measureEnabledFlag = FALSE;
 
 void saveInMemory(int16_t value);
 
-#define MEASDUR 10000 												/* measurement duration in ms */
-
 void logAccData(void);
 
 void ReadAccelSensorTask(void *pvParameters){
-	FRTOS1_vTaskDelay(10000);										/* time for SDCardTask to mount the file system */
 	initH3LI();														/* init accelerometer */
 	TickType_t xLastWakeTime;
 	xLastWakeTime = xTaskGetTickCount();
@@ -37,21 +35,23 @@ void ReadAccelSensorTask(void *pvParameters){
 		if(measureEnabledFlag){
 			isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); 	/* check if new data available */
 			if(newDataAvailableFlag == TRUE){
+				WAIT1_Waitus(2);
 				logAccData();										/* read sensor and save on SD card */
 			}
+			WAIT1_Waitus(2);
 			dataOverrun(Z_AXIS_OR, &dataOverrunFlag);				/* data overrun? */
 			if(dataOverrunFlag == TRUE){
 				count_or++;											/* count overruns */
 			}
 		}
-		FRTOS1_vTaskDelayUntil(&xLastWakeTime, 10);
+		FRTOS1_vTaskDelayUntil(&xLastWakeTime, 1/portTICK_RATE_MS);
 	}
 }
 
 void logAccData(void){
 	  z = getAccData();
 	  DATAQUEUE_SaveValue(z);										/* save in queue */
-	  if ((z>337) || (z< -337)){									/* greater than 1g? */
+	  if ((z>gain) || (z< -gain)){									/* greater than 1g? */
 		  LED_G_On();
 	  }
 	  else{

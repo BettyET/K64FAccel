@@ -11,11 +11,11 @@
 #include "FAT1.h"
 
 void startLog(void);
+void closeFile(void);
 void setLoggingEnabled(bool flag);
 bool isLoggingEnabled(void);
 
-static FAT1_FATFS fileSystemObject;
-static FIL fp;
+extern bool keyPressed;
 
 void SaveValuesSDTask(void *pvParameters);
 
