@@ -10,7 +10,8 @@
 
 #include "PE_Types.h"
 
-#define TICK_MS 1
+/* Timer-Einstellung */
+#define TMR_TICK_MS  1
 
 extern int32_t counter;
 

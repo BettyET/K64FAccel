@@ -7,20 +7,55 @@
 
 #include "SDCard.h"
 #include "ReadSensor.h"
+#include "Event.h"
+#include "KeyDebounce.h"
+#include "calibH3LI.h"
 
 void RTOS_Init(void);
 
 void RTOS_Run(void) {
-	RTOS_Init();
-	FRTOS1_vTaskStartScheduler();  /* does usually not return! */
+	SDCard_Init();					/* start SDCard task */
+	ReadSensor_Init();				/* start sensor reading task */
+	RTOS_Init();					/* start main task */
+	FRTOS1_vTaskStartScheduler();  	/* does usually not return! */
 }
 
-void RTOS_Init(void) {
-  /*! \todo Add tasks here */
-#if 1
+void MainTask(void *pvParameters);
+void myEvents(EVNT_Handle event);
 
-#endif
-  if (FRTOS1_xTaskCreate(SaveValuesSDTask, (signed portCHAR *)"SaveOnSDCard", configMINIMAL_STACK_SIZE+600, NULL, tskIDLE_PRIORITY+1, NULL) != pdPASS) {
+void RTOS_Init(void) {
+  if (FRTOS1_xTaskCreate(MainTask, (signed portCHAR *)"Main", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL) != pdPASS) {
       for(;;){} /* error */
     }
+}
+
+
+void MainTask(void *pvParameters){
+	while(1)
+	{
+		KEYDBNC_Process();
+		EVNT_HandleEvent(myEvents);
+		FRTOS1_vTaskDelay(50/portTICK_RATE_MS);
+	}
+}
+
+void myEvents(EVNT_Handle event)
+{
+	switch(event)
+	{
+	case EVENT_BUTTON_2_PRESSED:
+		if(isLoggingEnabled() && isMeasurementEnabled()){
+			setMeasurementEnabled(FALSE);
+		}
+		else if ((!isLoggingEnabled()) && (!isMeasurementEnabled())){
+			startLog();
+			setMeasurementEnabled(TRUE);
+			setLoggingEnabled(TRUE);
+		}
+		break;
+	case EVENT_BUTTON_2_LPRESSED:
+		//calibrateH3LI();
+		break;
+	}
+
 }

@@ -45,7 +45,7 @@
 #include "LED_B.h"
 #include "LEDpin3.h"
 #include "BitIoLdd3.h"
-#include "EInt1.h"
+#include "SW2.h"
 #include "ExtIntLdd1.h"
 #include "FAT1.h"
 #include "SD1.h"
@@ -153,12 +153,12 @@ void CI2C1_OnError(LDD_TUserData *UserDataPtr);
 /* ===================================================================*/
 void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr);
 
-void EInt1_OnInterrupt(void);
+void SW2_OnInterrupt(void);
 /*
 ** ===================================================================
-**     Event       :  EInt1_OnInterrupt (module Events)
+**     Event       :  SW2_OnInterrupt (module Events)
 **
-**     Component   :  EInt1 [ExtInt]
+**     Component   :  SW2 [ExtInt]
 **     Description :
 **         This event is called when an active signal edge/level has
 **         occurred.

@@ -160,9 +160,9 @@ void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr)
 
 /*
 ** ===================================================================
-**     Event       :  EInt1_OnInterrupt (module Events)
+**     Event       :  SW2_OnInterrupt (module Events)
 **
-**     Component   :  EInt1 [ExtInt]
+**     Component   :  SW2 [ExtInt]
 **     Description :
 **         This event is called when an active signal edge/level has
 **         occurred.
@@ -170,7 +170,7 @@ void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void EInt1_OnInterrupt(void)
+void SW2_OnInterrupt(void)
 {
 	keyPressed = TRUE;
 

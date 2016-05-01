@@ -8,10 +8,11 @@
 #include "FRTOS1.h"
 #include "Error.h"
 #include "SDCard.h"
+#include "Queue.h"
 
 static xQueueHandle DATAQUEUE_Queue;
 
-#define DATAQUEUE_LENGTH      2048 /* items in queue, that's my buffer size */
+
 #define DATAQUEUE_ITEM_SIZE   sizeof(int16_t)
 
 void DATAQUEUE_SaveValue(const int16_t value) {

@@ -23,6 +23,9 @@ bool keyPressed = FALSE;
 
 static FAT1_FATFS fileSystemObject;
 static FIL fp;
+
+static xSemaphoreHandle  startSensorReadingSem = NULL;
+
 #if 0
 
 #endif
@@ -37,6 +40,7 @@ void startLog(void){
 	  for(;;);
   }
 }
+
 void closeFile(void){
 	  /* closing file */
 	(void)FAT1_close(&fp);
@@ -52,7 +56,6 @@ bool isLoggingEnabled(void){
 
 void SaveValuesSDTask(void *pvParameters){
 	uint8_t write_buf[512];
-	static int i=0;
 	int16_t z;
 	UINT bw;
 
@@ -70,35 +73,17 @@ void SaveValuesSDTask(void *pvParameters){
 		for(;;);
 	}
 
-	if (FRTOS1_xTaskCreate(ReadAccelSensorTask, (signed portCHAR *)"ReadSensor", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, NULL) != pdPASS) {
-	    for(;;){} /* error */
-	  }
+	(void)xSemaphoreGive(startSensorReadingSem);						/* task is ready */
 
 	while(1)
 	{
-		if(keyPressed){
-			vTaskDelay(10/portTICK_RATE_MS);			/* debouncing */
-			if(EInt1_GetVal()== 0){						/* still pressed? */
-					if(isLoggingEnabled() && isMeasurementEnabled){
-						setMeasurementEnabled(FALSE);
-					}
-					else if ((!isLoggingEnabled()) && (!isMeasurementEnabled())){
-						setMeasurementEnabled(TRUE);
-						setLoggingEnabled(TRUE);
-						startLog();
-					}
-				//calibrateH3LI();
-			}
-			keyPressed = FALSE;
-
-		}
 		if(loggingEnabledFlag){
 			/* buffer data */
-			while(i<128){
-				  if(z=DATAQUEUE_ReadValue()){
+			while(strlen(write_buf)<500){
+				if(isDataInQueue()) {
+					  z = DATAQUEUE_ReadValue();
 					  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
 					  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
-					  i++;
 				  }
 				  else if(measureEnabledFlag == FALSE){		/* measurement disabled */
 					  break;								/* leafe */
@@ -115,9 +100,26 @@ void SaveValuesSDTask(void *pvParameters){
 				loggingEnabledFlag = FALSE;
 				LED_G_Off();
 			}
-			i=0;								/* set counter to 0 */
 			write_buf[0] = '\0';				/* reset buffer */
 		}
-		//vTaskDelay(1/portTICK_RATE_MS);
+		vTaskDelay(1/portTICK_RATE_MS);
+	}
+}
+
+bool isFileSystemMounted(void){
+	return (FRTOS1_xSemaphoreTake(startSensorReadingSem, 0)==pdTRUE);
+}
+
+void SDCard_Init(void){
+	/* create semaphore which is given after file system is mounted */
+	startSensorReadingSem  = FRTOS1_xSemaphoreCreateBinary();
+	if(startSensorReadingSem == NULL){
+		for(;;);													/* error */
+	}
+	FRTOS1_vQueueAddToRegistry(startSensorReadingSem, "startSensorReadingSem");
+
+	/* create task */
+	if (FRTOS1_xTaskCreate(SaveValuesSDTask, (signed portCHAR *)"SaveOnSDCard", configMINIMAL_STACK_SIZE+600, NULL, tskIDLE_PRIORITY+1, NULL) != pdPASS) {
+	      for(;;){} /* error */
 	}
 }

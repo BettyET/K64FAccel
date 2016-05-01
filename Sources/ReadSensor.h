@@ -15,5 +15,8 @@ extern bool measureEnabledFlag;
 void setMeasurementEnabled(bool flag);
 bool isMeasurementEnabled(void);
 
+bool isDataInQueue(void);
+
+void ReadSensor_Init(void);
 
 #endif /* SOURCES_READSENSOR_H_ */

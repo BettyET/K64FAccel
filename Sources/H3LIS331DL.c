@@ -171,7 +171,7 @@ void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		for(;;);									/* error */
+		for(;;);								/* error */
 	}
 	reg &= (ax<<4);								/* mask */
 	if(reg == (ax<<4)){
@@ -199,13 +199,13 @@ int16_t getAccData(void){
 void initH3LI(void){
 	initI2C();
 	readIfImMe();								/* communication correct? */
-	WAIT1_WaitOSms(10);
+	WAIT1_Waitms(10);
 	setNormalPowerMode();						/* normal power mode */
-	WAIT1_WaitOSms(10);
-	setRange(RANGE_200g);						/* range 100g */
-	WAIT1_WaitOSms(10);
-	setSamplingRate(RATE_400Hz);				/* sampling rate 100Hz */
-	WAIT1_WaitOSms(10);
+	WAIT1_Waitms(10);
+	setRange(RANGE_200g);						/* range 200g */
+	WAIT1_Waitms(10);
+	setSamplingRate(RATE_400Hz);				/* sampling rate 400Hz */
+	WAIT1_Waitms(10);
 	setBlockDataUpdate();						/* block data update */
 }
 

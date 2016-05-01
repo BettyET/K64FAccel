@@ -8,6 +8,8 @@
 #ifndef SOURCES_QUEUE_H_
 #define SOURCES_QUEUE_H_
 
+#define DATAQUEUE_LENGTH      2048 /* items in queue, that's my buffer size */
+
 /*!
  * \brief Sends a string to the queue. Note that if the queue is full, it will block.
  * \param str Pointer to the string.

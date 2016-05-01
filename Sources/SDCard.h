@@ -15,6 +15,10 @@ void closeFile(void);
 void setLoggingEnabled(bool flag);
 bool isLoggingEnabled(void);
 
+bool isFileSystemMounted(void);
+
+void SDCard_Init(void);
+
 extern bool keyPressed;
 
 void SaveValuesSDTask(void *pvParameters);
