@@ -58,21 +58,21 @@ void ReadAccelSensorTask(void *pvParameters){
 		switch(sensState){
 			case SENS_STATE_STARTUP:
 				if(isFileSystemMounted()){							/* wait until file system mounted */
-					sensState = SENS_STATE_READY;
+					sensState = SENS_STATE_IDLE;
 				}
 				break;
-			case SENS_STATE_READY:
-				if(measureEnabledFlag){
-					isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); 	/* check if new data available */
-					if(newDataAvailableFlag == TRUE){
-						WAIT1_Waitus(2);
-						logAccData();										/* read sensor and save on SD card */
-					}
+			case SENS_STATE_IDLE:
+				break;
+			case SENS_STATE_MEASURE:
+				isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); 	/* check if new data available */
+				if(newDataAvailableFlag == TRUE){
 					WAIT1_Waitus(2);
-					dataOverrun(Z_AXIS_OR, &dataOverrunFlag);				/* data overrun? */
-					if(dataOverrunFlag == TRUE){
-						count_or++;											/* count overruns */
-					}
+					logAccData();										/* read sensor and save on SD card */
+				}
+				WAIT1_Waitus(2);
+				dataOverrun(Z_AXIS_OR, &dataOverrunFlag);				/* data overrun? */
+				if(dataOverrunFlag == TRUE){
+					count_or++;											/* count overruns */
 				}
 				break;
 			case SENS_START_CALIB:
@@ -112,7 +112,7 @@ void ReadAccelSensorTask(void *pvParameters){
 					LED_B_Off();												/* end of calibration */
 					gain = (accelPos- accelNeg)/2;				 				/* sensitivity */
 					zerGOff = accelPos-gain;					 				/* zero g offset */
-					sensState = SENS_STATE_READY;
+					sensState = SENS_STATE_IDLE;
 				}
 				break;
 		}
@@ -151,14 +151,6 @@ void logAccData(void){
 	  else{
 		  LED_G_Off();
 	  }
-}
-
-void setMeasurementEnabled(bool flag){
-	measureEnabledFlag = flag;
-}
-
-bool isMeasurementEnabled(void){
-	return measureEnabledFlag;
 }
 
 bool isDataInQueue(void){

@@ -43,13 +43,12 @@ void myEvents(EVNT_Handle event)
 	switch(event)
 	{
 	case EVENT_BUTTON_2_PRESSED:
-		if(isLoggingEnabled() && isMeasurementEnabled()){
-			setMeasurementEnabled(FALSE);
+		if(getSensState()== SENS_STATE_MEASURE){
+			setSensState(SENS_STATE_IDLE);
 		}
-		else if ((!isLoggingEnabled()) && (!isMeasurementEnabled())){
-			startLog();
-			setMeasurementEnabled(TRUE);
-			setLoggingEnabled(TRUE);
+		else if ((getSensState()== SENS_STATE_IDLE) && (getSDState()== SD_STATE_IDLE)){
+			setSensState(SENS_STATE_MEASURE);
+			setSDState(SD_STATE_OPENFILE);
 		}
 		break;
 	case EVENT_BUTTON_2_LPRESSED:

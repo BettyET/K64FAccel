@@ -23,27 +23,14 @@ bool keyPressed = FALSE;
 static FAT1_FATFS fileSystemObject;
 static FIL fp;
 
+SDStateType sdState = SD_STATE_STARTUP;
+
 static xSemaphoreHandle  startSensorReadingSem = NULL;
 
 #if 0
 
 #endif
 
-void startLog(void){
-  /* open file */
-  if (FAT1_open(&fp, "./log.txt", FA_OPEN_ALWAYS|FA_WRITE)!=FR_OK) {
-	for(;;);
-  }
-  /* move to the end of the file */
-  if (FAT1_lseek(&fp, fp.fsize) != FR_OK || fp.fptr != fp.fsize) {
-	  for(;;);
-  }
-}
-
-void closeFile(void){
-	  /* closing file */
-	(void)FAT1_close(&fp);
-}
 
 void setLoggingEnabled(bool flag){
 	loggingEnabledFlag = flag;
@@ -61,45 +48,66 @@ void SaveValuesSDTask(void *pvParameters){
 	/* write data */
 	write_buf[0] = '\0';
 
-	/* SD card detection: PTE6 with pull-down! */
-	PORT_PDD_SetPinPullSelect(PORTE_BASE_PTR, 6, PORT_PDD_PULL_DOWN);
-	PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
-
-	if (FAT1_Init()!=ERR_OK) { 											/* initialize FAT driver */
-		for(;;);
-	}
-	if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
-		for(;;);
-	}
-
-	(void)xSemaphoreGive(startSensorReadingSem);						/* task is ready */
-
 	while(1)
 	{
-		if(loggingEnabledFlag){
-			/* buffer data */
-			while(strlen(write_buf)<500){
-				if(isDataInQueue()) {
-					  z = DATAQUEUE_ReadValue();
-					  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
-					  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
+		switch(sdState){
+			case SD_STATE_STARTUP:
+				/* SD card detection: PTE6 with pull-down! */
+				PORT_PDD_SetPinPullSelect(PORTE_BASE_PTR, 6, PORT_PDD_PULL_DOWN);
+				PORT_PDD_SetPinPullEnable(PORTE_BASE_PTR, 6, PORT_PDD_PULL_ENABLE);
+
+				if (FAT1_Init()!=ERR_OK) { 											/* initialize FAT driver */
+					for(;;);
+				}
+				if (FAT1_mount(&fileSystemObject, (const TCHAR*)"0", 1) != FR_OK) { /* mount file system */
+					for(;;);
+				}
+				(void)xSemaphoreGive(startSensorReadingSem);						/* file system mounted */
+				sdState = SD_STATE_IDLE;
+				break;
+			case SD_STATE_IDLE:
+				break;
+			case SD_STATE_OPENFILE:
+				/* open file */
+				if (FAT1_open(&fp, "./log.txt", FA_OPEN_ALWAYS|FA_WRITE)!=FR_OK) {
+					for(;;);
+				}
+				/* move to the end of the file */
+				if (FAT1_lseek(&fp, fp.fsize) != FR_OK || fp.fptr != fp.fsize) {
+					for(;;);
+				}
+				sdState = SD_STATE_BUFFER;
+			case SD_STATE_BUFFER:
+				/* buffer data */
+				while((strlen(write_buf)<500) && (getSensState()== SENS_STATE_MEASURE)){
+					if(isDataInQueue()) {
+						  z = DATAQUEUE_ReadValue();
+						  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
+						  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
+					  }
 				  }
-				  else if(measureEnabledFlag == FALSE){		/* measurement disabled */
-					  break;								/* leafe */
-				  }
-			  }
-			/* write data down */
-			if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
+				sdState = SD_STATE_SAVE;
+				break;
+			case SD_STATE_SAVE:
+				/* write data down */
+				if (FAT1_write(&fp, write_buf, UTIL1_strlen((char*)write_buf), &bw)!=FR_OK) {
+					(void)FAT1_close(&fp);
+					for(;;);
+				}
+				FAT1_sync(&fp);
+				if((!DATAQUEUE_NofElements()) && (getSensState()==SENS_STATE_IDLE)){
+					sdState = SD_STATE_CLOSEFILE;
+				}
+				else{
+					sdState = SD_STATE_BUFFER;
+				}
+				write_buf[0] = '\0';				/* reset buffer */
+				break;
+			case SD_STATE_CLOSEFILE:
+				 /* closing file */
 				(void)FAT1_close(&fp);
-				for(;;);
-			}
-			FAT1_sync(&fp);
-			if((!DATAQUEUE_NofElements()) && (measureEnabledFlag == FALSE)){
-				(void)FAT1_close(&fp);
-				loggingEnabledFlag = FALSE;
 				LED_G_Off();
-			}
-			write_buf[0] = '\0';				/* reset buffer */
+				sdState = SD_STATE_IDLE;
 		}
 		vTaskDelay(1/portTICK_RATE_MS);
 	}
@@ -107,6 +115,14 @@ void SaveValuesSDTask(void *pvParameters){
 
 bool isFileSystemMounted(void){
 	return (FRTOS1_xSemaphoreTake(startSensorReadingSem, 0)==pdTRUE);
+}
+
+void setSDState(SDStateType state){
+	sdState = state;
+}
+
+SDStateType getSDState(void){
+	return sdState;
 }
 
 void SDCard_Init(void){

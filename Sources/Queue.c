@@ -18,7 +18,6 @@ static xQueueHandle DATAQUEUE_Queue;
 void DATAQUEUE_SaveValue(const int16_t value) {
 	//xQueueSendToBack(SQUEUE_Queue,&str,0)
 	  if (FRTOS1_xQueueSendToBack(DATAQUEUE_Queue, &value, 0)!=pdPASS) {
-		  closeFile();
 		  for(;;){} /* ups? */
 	  }
 }

@@ -10,10 +10,17 @@
 
 #include "FAT1.h"
 
-void startLog(void);
-void closeFile(void);
-void setLoggingEnabled(bool flag);
-bool isLoggingEnabled(void);
+typedef enum {
+  SD_STATE_STARTUP,
+  SD_STATE_IDLE,
+  SD_STATE_OPENFILE,
+  SD_STATE_BUFFER,
+  SD_STATE_SAVE,
+  SD_STATE_CLOSEFILE,
+} SDStateType;
+
+void setSDState(SDStateType state);
+SDStateType getSDState(void);
 
 bool isFileSystemMounted(void);
 
