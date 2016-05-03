@@ -12,6 +12,7 @@
 void ReadAccelSensorTask(void *pvParameters);
 
 typedef enum {
+  SENS_STATE_INITACCEL,
   SENS_STATE_STARTUP,
   SENS_STATE_IDLE,
   SENS_STATE_MEASURE,

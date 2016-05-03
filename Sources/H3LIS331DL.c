@@ -18,16 +18,24 @@
 #define WHO_AM_I 0x0F
 
 /* Status register */
-#define STATUS_REG 0x27			/* Status register */
+#define STATUS_REG 	0x27
+
+/* Interrupt control register */
+#define CTRL_REG_3 	0x22
+
+/* Interrupt configuration register */
+#define INT1_CFG 	0x30
+#define INT2_CFG 	0x34
 
 /* External 3-axis accelerometer control register addresses */
-#define CTRL_REG_1 0x20
-#define CTRL_REG_4 0x23
+#define CTRL_REG_1 	0x20
+#define CTRL_REG_4 	0x23
 
 /* Acceleration data registers */
-#define OUT_Z_L 0x2C			/* Ein Register auslesen */
-#define OUT_Z_L_MSB 0xAC		/* Mehrere Register auslesen */
-#define OUT_Z_H 0x2D
+#define OUT_Z_L 	0x2C		/* read 1 register */
+#define OUT_Z_H 	0x2D
+#define OUT_Z_L_MSB 0xAC		/* read more than 1 registers */
+
 
 
 static uint8_t accelZ[2]={0,0};
@@ -144,6 +152,33 @@ void setBlockDataUpdate(void){
 	reg |= 0x80;
 	WAIT1_WaitOSms(1);
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setIntCntrReg(void){
+	uint8_t res;
+	uint8_t reg = 0x24;								/* latch interrupt request */
+	res = H3LI_WriteReg(CTRL_REG_3, reg);
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setInt1(void){
+	uint8_t res;
+	uint8_t reg = 0x20;								/* interrupt on high z event */
+	res = H3LI_WriteReg(INT1_CFG, reg);
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setInt2(void){
+	uint8_t res;
+	uint8_t reg = 0x10;								/* interrupt on low z event */
+	res = H3LI_WriteReg(INT2_CFG, reg);
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
