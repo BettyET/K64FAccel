@@ -56,6 +56,8 @@
 #include "TmDt1.h"
 #include "TMOUT1.h"
 #include "CS1.h"
+#include "SW3.h"
+#include "ExtIntLdd2.h"
 #include "SM1.h"
 
 #ifdef __cplusplus
@@ -272,6 +274,20 @@ void FRTOS1_vApplicationMallocFailedHook(void);
 **     Description :
 **         If enabled, the RTOS will call this hook in case memory
 **         allocation failed.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+void SW3_OnInterrupt(void);
+/*
+** ===================================================================
+**     Event       :  SW3_OnInterrupt (module Events)
+**
+**     Component   :  SW3 [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================

@@ -12,8 +12,12 @@
 
 void KEY_Scan(void);
 
-  #include "SW2.h"
+#include "SW2.h"
+#include "SW3.h"
+
   #define KEY2_Get()  (!(SW2_GetVal()))
     /*!< Macro which returns TRUE if key is pressed */
+  #define KEY3_Get()  (!(SW3_GetVal()))
+   /*!< Macro which returns TRUE if key is pressed */
 
 #endif /* KEYS_H_ */

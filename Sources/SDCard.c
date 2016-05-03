@@ -16,7 +16,6 @@
 #include "Error.h"
 #include "ReadSensor.h"
 #include "Queue.h"
-#include "calibH3LI.h"
 
 bool loggingEnabledFlag = FALSE;
 bool keyPressed = FALSE;

@@ -7,7 +7,6 @@
 
 
 #include "H3LIS331DL.h"
-#include "calibH3LI.h"
 #include "Error.h"
 #include "CI2C1.h"
 #include "WAIT1.h"
@@ -191,10 +190,6 @@ int16_t getRawData(void){
 	return ((int16_t)accelZ[1]<<8)| ((int16_t)accelZ[0]);
 }
 
-int16_t getAccData(void){
-	int16_t accel = getRawData();
-	return (accel-zerGOff);
-}
 
 void initH3LI(void){
 	initI2C();

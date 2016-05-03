@@ -9,7 +9,6 @@
 #include "ReadSensor.h"
 #include "Event.h"
 #include "KeyDebounce.h"
-#include "calibH3LI.h"
 
 void RTOS_Init(void);
 
@@ -54,7 +53,12 @@ void myEvents(EVNT_Handle event)
 		}
 		break;
 	case EVENT_BUTTON_2_LPRESSED:
-		//calibrateH3LI();
+		setSensState(SENS_START_CALIB);
+		break;
+	case EVENT_BUTTON_3_PRESSED:
+		if((getSensState() == SENS_READ_POS_DIR) || (getSensState() == SENS_READ_NEG_DIR)){
+			doCalibrationStep();
+		}
 		break;
 	}
 

@@ -52,7 +52,6 @@ typedef enum {
 /* Driver Functions */
 
 int16_t getRawData(void);
-int16_t getAccData(void);
 
 void initH3LI(void);
 

@@ -53,6 +53,8 @@
 #include "TmDt1.h"
 #include "TMOUT1.h"
 #include "CS1.h"
+#include "SW3.h"
+#include "ExtIntLdd2.h"
 #include "SM1.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"

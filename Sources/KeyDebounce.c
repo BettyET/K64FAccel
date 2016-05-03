@@ -24,6 +24,10 @@ static DBNC_KeySet KEYDBNC_GetKeys(void) {
   {
     keys |= (1<<1);
   }
+  if (KEY3_Get())
+  {
+    keys |= (1<<2);
+  }
   return keys;
 }
 
