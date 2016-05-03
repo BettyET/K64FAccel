@@ -149,7 +149,7 @@ void setBlockDataUpdate(void){
 	}
 }
 
-void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable){
+bool isNewDataAvailable(AXES_DA_t ax){
 	uint8_t res;
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
@@ -157,15 +157,10 @@ void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable){
 		for(;;);									/* error */
 	}
 	reg &= ax;									/* mask */
-	if(reg == ax){
-		*newDataAvailable = TRUE;				/* set flag */
-	}
-	else{
-		*newDataAvailable = FALSE;				/* clear flag */
-	}
+	return (reg == ax);
 }
 
-void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
+bool dataOverrun(AXES_OR_t ax){
 	uint8_t res;
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
@@ -173,12 +168,7 @@ void dataOverrun(AXES_OR_t ax, bool *dataOverrun){
 		for(;;);								/* error */
 	}
 	reg &= (ax<<4);								/* mask */
-	if(reg == (ax<<4)){
-		*dataOverrun = TRUE;					/* set flag */
-	}
-	else{
-		*dataOverrun = FALSE;					/* clear flag */
-	}
+	return(reg == (ax<<4));
 }
 
 int16_t getRawData(void){
@@ -194,13 +184,13 @@ int16_t getRawData(void){
 void initH3LI(void){
 	initI2C();
 	readIfImMe();								/* communication correct? */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
 	setNormalPowerMode();						/* normal power mode */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
 	setRange(RANGE_200g);						/* range 200g */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
 	setSamplingRate(RATE_400Hz);				/* sampling rate 400Hz */
-	WAIT1_Waitms(10);
+	WAIT1_WaitOSms(10);
 	setBlockDataUpdate();						/* block data update */
 }
 

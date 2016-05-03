@@ -26,8 +26,6 @@ bool isFileSystemMounted(void);
 
 void SDCard_Init(void);
 
-extern bool keyPressed;
-
 void SaveValuesSDTask(void *pvParameters);
 
 #endif /* SOURCES_SDCARD_H_ */

@@ -172,9 +172,7 @@ void BUTTON_SW2_OnInterrupt(LDD_TUserData *UserDataPtr)
 */
 void SW2_OnInterrupt(void)
 {
-	keyPressed = TRUE;
 
-		//calibrateH3LI();						/* do calibration */
 }
 
 /*

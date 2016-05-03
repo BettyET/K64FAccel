@@ -11,29 +11,20 @@
 #include "Queue.h"
 #include "SDCard.h"
 
-#define MEMORY_SIZE 10				/* number of calibrating measurements */
+#define MEMORY_SIZE 10									/* number of calibrating measurements */
+static int16_t accelMemory[MEMORY_SIZE]={0}; 			/* memory for raw data */
+static int16_t accelPos;								/* corresponds to 1g */
+static int16_t accelNeg;								/* corresponds to -1g*/
 
-int16_t z = 0;
-int16_t x = 0;
-int16_t y = 0;
+static int16_t zerGOff = 295;							/* zero g offset, substract from raw value */
+static int16_t gain = 173;								/* number of digits corresponding to 1g */
 
-uint16_t count_or;
+static uint16_t count_or;								/* number of overruns */
 
-static int16_t accelMemory[MEMORY_SIZE]={0};
+static SensStateType sensState = SENS_STATE_INITACCEL; 	/* initial state */
 
-int16_t zerGOff = 295;				/* zero g offset, substract from raw value */
-int16_t gain = 173;					/* number of digits corresponding to 1g */
-
-static int16_t accelPos;
-static int16_t accelNeg;
-
-
-bool newDataAvailableFlag = FALSE;
-bool dataOverrunFlag = FALSE;
-bool measureEnabledFlag = FALSE;
-
-static xSemaphoreHandle dataQueueSem = NULL;
-static xSemaphoreHandle startStopSensCalibSem = NULL;
+static xSemaphoreHandle dataQueueSem = NULL;			/* manages acceleration data */
+static xSemaphoreHandle startStopSensCalibSem = NULL;	/* do calibration */
 
 /* Prototypes */
 void saveInMemory(int16_t value);
@@ -46,40 +37,39 @@ void blinkBlue(void);
 
 int16_t getAccData(void);
 
-SensStateType sensState = SENS_STATE_STARTUP; 		/* state machine state */
 
 void ReadAccelSensorTask(void *pvParameters){
 	int32_t accelSum =0;
-	initH3LI();														/* init accelerometer */
 	TickType_t xLastWakeTime;
 	xLastWakeTime = xTaskGetTickCount();
 	while(1)
 	{
 		switch(sensState){
+			case SENS_STATE_INITACCEL:
+				initH3LI();														/* init accelerometer */
+				sensState = SENS_STATE_STARTUP;
 			case SENS_STATE_STARTUP:
-				if(isFileSystemMounted()){							/* wait until file system mounted */
+				if(isFileSystemMounted()){										/* wait until file system mounted */
 					sensState = SENS_STATE_IDLE;
 				}
 				break;
 			case SENS_STATE_IDLE:
 				break;
 			case SENS_STATE_MEASURE:
-				isNewDataAvailable(Z_AXIS_DA, &newDataAvailableFlag); 	/* check if new data available */
-				if(newDataAvailableFlag == TRUE){
+				if(isNewDataAvailable(Z_AXIS_DA)){								/* check if new data available */
 					WAIT1_Waitus(2);
-					logAccData();										/* read sensor and save on SD card */
+					logAccData();												/* read sensor and save on SD card */
 				}
 				WAIT1_Waitus(2);
-				dataOverrun(Z_AXIS_OR, &dataOverrunFlag);				/* data overrun? */
-				if(dataOverrunFlag == TRUE){
-					count_or++;											/* count overruns */
+				if(dataOverrun(Z_AXIS_OR)){										/* data overrun? */
+					count_or++;													/* count overruns */
 				}
 				break;
 			case SENS_START_CALIB:
-				blinkRed();													/* ready to calibrate */
+				blinkRed();														/* ready to calibrate */
 				sensState = SENS_READ_POS_DIR;
 				break;
-			case SENS_READ_POS_DIR:											/* read acceleration positive direction */
+			case SENS_READ_POS_DIR:												/* read acceleration positive direction */
 				if(FRTOS1_xSemaphoreTake(startStopSensCalibSem, 0)==pdTRUE){
 					accelSum = 0;
 					WAIT1_WaitOSms(2000);
@@ -96,7 +86,7 @@ void ReadAccelSensorTask(void *pvParameters){
 					sensState = SENS_READ_NEG_DIR;
 				}
 				break;
-			case SENS_READ_NEG_DIR:											/* read acceleration negative direction */
+			case SENS_READ_NEG_DIR:												/* read acceleration negative direction */
 				if(FRTOS1_xSemaphoreTake(startStopSensCalibSem, 0)==pdTRUE){
 					accelSum = 0;
 					WAIT1_WaitOSms(2000);
@@ -142,7 +132,7 @@ void blinkBlue(void){
 }
 
 void logAccData(void){
-	  z = getAccData();
+	  int16_t z = getAccData();
 	  DATAQUEUE_SaveValue(z);										/* save in queue */
 	  (void)xSemaphoreGive(dataQueueSem);
 	  if ((z>gain) || (z< -gain)){									/* greater than 1g? */

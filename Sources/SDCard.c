@@ -17,8 +17,6 @@
 #include "ReadSensor.h"
 #include "Queue.h"
 
-bool loggingEnabledFlag = FALSE;
-bool keyPressed = FALSE;
 
 static FAT1_FATFS fileSystemObject;
 static FIL fp;
@@ -26,19 +24,6 @@ static FIL fp;
 SDStateType sdState = SD_STATE_STARTUP;
 
 static xSemaphoreHandle  startSensorReadingSem = NULL;
-
-#if 0
-
-#endif
-
-
-void setLoggingEnabled(bool flag){
-	loggingEnabledFlag = flag;
-}
-
-bool isLoggingEnabled(void){
-	return loggingEnabledFlag;
-}
 
 void SaveValuesSDTask(void *pvParameters){
 	uint8_t write_buf[512];

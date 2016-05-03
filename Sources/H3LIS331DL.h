@@ -55,8 +55,8 @@ int16_t getRawData(void);
 
 void initH3LI(void);
 
-void isNewDataAvailable(AXES_DA_t ax, bool *newDataAvailable);
-void dataOverrun(AXES_OR_t ax, bool *dataOverrun);
+bool isNewDataAvailable(AXES_DA_t ax);
+bool dataOverrun(AXES_OR_t ax);
 
 
 H3LI_TDataState deviceData;
