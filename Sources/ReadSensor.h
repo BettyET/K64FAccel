@@ -27,8 +27,6 @@ SensStateType getSensState(void);
 
 void doCalibrationStep(void);
 
-bool isDataInQueue(void);
-
 void ReadSensor_Init(void);
 
 #endif /* SOURCES_READSENSOR_H_ */

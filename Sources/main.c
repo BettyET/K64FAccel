@@ -50,6 +50,7 @@
 #include "CD1.h"
 #include "UTIL1.h"
 #include "FRTOS1.h"
+#include "RTOSCNTRLDD1.h"
 #include "TmDt1.h"
 #include "TMOUT1.h"
 #include "CS1.h"

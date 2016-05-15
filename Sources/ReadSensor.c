@@ -23,7 +23,6 @@ static uint16_t count_or;								/* number of overruns */
 
 static SensStateType sensState = SENS_STATE_INITACCEL; 	/* initial state */
 
-static xSemaphoreHandle dataQueueSem = NULL;			/* manages acceleration data */
 static xSemaphoreHandle startStopSensCalibSem = NULL;	/* do calibration */
 
 /* Prototypes */
@@ -57,7 +56,7 @@ void ReadAccelSensorTask(void *pvParameters){
 				break;
 			case SENS_STATE_MEASURE:
 				if(isNewDataAvailable(Z_AXIS_DA)){								/* check if new data available */
-					WAIT1_Waitus(2);
+					WAIT1_Waitus(2);											/* strange sensor problem */
 					logAccData();												/* read sensor and save on SD card */
 				}
 				WAIT1_Waitus(2);
@@ -134,17 +133,12 @@ void blinkBlue(void){
 void logAccData(void){
 	  int16_t z = getAccData();
 	  DATAQUEUE_SaveValue(z);										/* save in queue */
-	  (void)xSemaphoreGive(dataQueueSem);
 	  if ((z>gain) || (z< -gain)){									/* greater than 1g? */
 		  LED_G_On();
 	  }
 	  else{
 		  LED_G_Off();
 	  }
-}
-
-bool isDataInQueue(void){
-	return (FRTOS1_xSemaphoreTake(dataQueueSem, 0)==pdTRUE);
 }
 
 void setSensState(SensStateType state){
@@ -165,13 +159,6 @@ int16_t getAccData(void){
 }
 
 void ReadSensor_Init(void){
-	/* create semaphore to manage sensor data */
-	dataQueueSem  = FRTOS1_xSemaphoreCreateCounting(DATAQUEUE_LENGTH, 0);
-	if(dataQueueSem == NULL){
-		for(;;);													/* error */
-	}
-	FRTOS1_vQueueAddToRegistry(dataQueueSem, "dataQueueSem");
-
 	/* create sempaphore to manage calibration */
 	startStopSensCalibSem  = FRTOS1_xSemaphoreCreateBinary();
 	if(startStopSensCalibSem == NULL){

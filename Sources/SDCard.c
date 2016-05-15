@@ -65,7 +65,7 @@ void SaveValuesSDTask(void *pvParameters){
 			case SD_STATE_BUFFER:
 				/* buffer data */
 				while((strlen(write_buf)<500) && (getSensState()== SENS_STATE_MEASURE)){
-					if(isDataInQueue()) {
+					if(DATAQUEUE_NofElements()) {
 						  z = DATAQUEUE_ReadValue();
 						  UTIL1_strcatNum16s(write_buf, sizeof(write_buf), z);
 						  UTIL1_strcat(write_buf, sizeof(write_buf), (unsigned char*)"\r\n");
