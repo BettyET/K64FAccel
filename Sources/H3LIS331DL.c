@@ -23,9 +23,17 @@
 /* Interrupt control register */
 #define CTRL_REG_3 	0x22
 
+/* Interrupt source register */
+#define INT1_SRC 	0x31
+#define INT2_SRC	0x35
+
 /* Interrupt configuration register */
 #define INT1_CFG 	0x30
 #define INT2_CFG 	0x34
+#define INT1_THS	0x32
+#define INT2_THS	0x36
+#define NT1_DURATION 0x33
+#define NT2_DURATION 0x37
 
 /* External 3-axis accelerometer control register addresses */
 #define CTRL_REG_1 	0x20
@@ -116,12 +124,12 @@ void setRange(RANGE_t rg){
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
-	reg &= 0xCF;								/* mask */
+	reg &= 0xCF;									/* mask */
 	reg |= rg <<4;
-	WAIT1_WaitOSms(1);
+	WAIT1_WaitOSms(1);								/* strange error: need to wait short moment after reading a register before writing */
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
 	if (res != ERR_OK){
-		for(;;);								/* error */
+		for(;;);									/* error */
 	}
 }
 
@@ -184,6 +192,76 @@ void setInt2(void){
 	}
 }
 
+void setInt1Threshold(int ths){
+	uint8_t res;
+	uint8_t reg = ths;
+	if(ths > 127){
+		ths = 127;
+	}
+	res = H3LI_WriteReg(INT1_THS, ths);				/* set threshold for high z event */
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setInt2Threshold(uint8_t ths){
+	uint8_t res;
+	if(ths > 127){
+		ths = 127;
+	}
+	res = H3LI_WriteReg(INT2_THS, ths);				/* set threshold for low z event */
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setInt1Duration(uint8_t dur){
+	uint8_t res;
+	if(dur > 127){
+		dur = 127;
+	}
+	res = H3LI_WriteReg(NT1_DURATION, dur);				/* set threshold for low z event */
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+void setInt2Duration(uint8_t dur){
+	uint8_t res;
+	if(dur > 127){
+		dur = 127;
+	}
+	res = H3LI_WriteReg(NT2_DURATION, dur);				/* set threshold for low z event */
+	if (res != ERR_OK){
+		for(;;);									/* error */
+	}
+}
+
+uint8_t readInt1Source(void){
+	uint8_t res;
+	uint8_t reg;
+	res = H3LI_ReadReg(INT1_SRC,(uint8_t*)&reg, 1);
+	if (res != ERR_OK){
+		for(;;);								/* error */
+	}
+	reg &= 0x40;								/* mask */
+	WAIT1_Waitus(2);
+	return (reg);
+}
+
+uint8_t readInt2Source(void){
+	uint8_t res;
+	uint8_t reg;
+	res = H3LI_ReadReg(INT2_SRC,(uint8_t*)&reg, 1);
+	if (res != ERR_OK){
+		for(;;);								/* error */
+	}
+	reg &= 0x40;								/* mask */
+	WAIT1_Waitus(2);
+	return (reg);
+}
+
+
 bool isNewDataAvailable(AXES_DA_t ax){
 	uint8_t res;
 	uint8_t reg;
@@ -219,13 +297,24 @@ int16_t getRawData(void){
 void initH3LI(void){
 	initI2C();
 	readIfImMe();								/* communication correct? */
-	WAIT1_WaitOSms(10);
+	WAIT1_WaitOSms(1);
 	setNormalPowerMode();						/* normal power mode */
-	WAIT1_WaitOSms(10);
+	WAIT1_WaitOSms(1);
 	setRange(RANGE_200g);						/* range 200g */
-	WAIT1_WaitOSms(10);
+	WAIT1_WaitOSms(1);
 	setSamplingRate(RATE_400Hz);				/* sampling rate 400Hz */
-	WAIT1_WaitOSms(10);
+	WAIT1_WaitOSms(1);
 	setBlockDataUpdate();						/* block data update */
+	WAIT1_WaitOSms(1);
+	setIntCntrReg();							/* interrupt configurations */
+	WAIT1_WaitOSms(1);
+	setInt1();									/* high z event */
+	WAIT1_WaitOSms(1);
+	setInt2();									/* low z event */
+	WAIT1_WaitOSms(1);
+	setInt1Threshold(4);						/* set threshold high z event*/
+	WAIT1_WaitOSms(1);
+	setInt1Duration(1);							/* set minimal duration for high z event */
+	WAIT1_WaitOSms(1);
 }
 

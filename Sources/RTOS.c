@@ -10,6 +10,7 @@
 #include "Event.h"
 #include "KeyDebounce.h"
 
+
 void RTOS_Init(void);
 
 void RTOS_Run(void) {
@@ -43,21 +44,24 @@ void myEvents(EVNT_Handle event)
 	switch(event)
 	{
 	case EVENT_BUTTON_2_PRESSED:
-		if(getSensState()== SENS_STATE_MEASURE){
-			setSensState(SENS_STATE_IDLE);
-		}
-		else if ((getSensState()== SENS_STATE_IDLE) && (getSDState()== SD_STATE_IDLE)){
-			setSensState(SENS_STATE_MEASURE);
-			setSDState(SD_STATE_OPENFILE);
-		}
+		button2Pressed();
+//		if(getSensState()== SENS_STATE_MEASURE){
+//			setSensState(SENS_STATE_IDLE);
+//		}
+//		else if ((getSensState()== SENS_STATE_IDLE) && (getSDState()== SD_STATE_IDLE)){
+//			setSensState(SENS_STATE_MEASURE);
+//			setSDState(SD_STATE_OPENFILE);
+//		}
 		break;
 	case EVENT_BUTTON_2_LPRESSED:
-		setSensState(SENS_START_CALIB);
+		button2LongPressed();
+//		setSensState(SENS_START_CALIB);
 		break;
 	case EVENT_BUTTON_3_PRESSED:
-		if((getSensState() == SENS_READ_POS_DIR) || (getSensState() == SENS_READ_NEG_DIR)){
-			doCalibrationStep();
-		}
+		button3Pressed();
+//		if((getSensState() == SENS_READ_POS_DIR) || (getSensState() == SENS_READ_NEG_DIR)){
+//			doCalibrationStep();
+//		}
 		break;
 	}
 

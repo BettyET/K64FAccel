@@ -19,8 +19,7 @@ typedef enum {
   SD_STATE_CLOSEFILE,
 } SDStateType;
 
-void setSDState(SDStateType state);
-SDStateType getSDState(void);
+void startStopMeas(void);
 
 bool isFileSystemMounted(void);
 

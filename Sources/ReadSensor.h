@@ -22,10 +22,11 @@ typedef enum {
 
 } SensStateType;
 
-void setSensState(SensStateType state);
-SensStateType getSensState(void);
+void button2Pressed(void);
+void button2LongPressed(void);
+void button3Pressed(void);
 
-void doCalibrationStep(void);
+void fileSystemReady(void);
 
 void ReadSensor_Init(void);
 

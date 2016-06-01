@@ -59,6 +59,8 @@
 #include "CS1.h"
 #include "SW3.h"
 #include "ExtIntLdd2.h"
+#include "Buzzer.h"
+#include "BitIoLdd4.h"
 #include "SM1.h"
 
 #ifdef __cplusplus
