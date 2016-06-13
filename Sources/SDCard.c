@@ -13,7 +13,6 @@
 #include "LED_G.h"
 #include "H3LIS331DL.h"
 #include "Events.h"
-#include "Error.h"
 #include "ReadSensor.h"
 #include "Queue.h"
 
@@ -22,8 +21,6 @@ static FAT1_FATFS fileSystemObject;
 static FIL fp;
 
 SDStateType sdState = SD_STATE_STARTUP;
-
-static xSemaphoreHandle  startSensorReadingSem = NULL;
 
 static TaskHandle_t xHandlingSDTask;
 
@@ -57,10 +54,10 @@ void SaveValuesSDTask(void *pvParameters){
 				sdState = SD_STATE_IDLE;
 				break;
 			case SD_STATE_IDLE:
-				xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-									   START_STOP_MEAS_BIT,  	/* Clear all bits on exit. */
-									   &ulNotifiedValue, /* Stores the notified value. */
-									   0);				 /* Don't wait */
+				xResult = xTaskNotifyWait( pdFALSE,    	 							/* Don't clear bits on entry. */
+									   START_STOP_MEAS_BIT,  						/* Clear bit on exit. */
+									   &ulNotifiedValue, 							/* Stores the notified value. */
+									   0);				 							/* Don't wait */
 
 				  if( xResult == pdPASS )
 				  {
@@ -100,10 +97,10 @@ void SaveValuesSDTask(void *pvParameters){
 				}
 				FAT1_sync(&fp);
 				if(!DATAQUEUE_NofElements()){
-					xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-										   START_STOP_MEAS_BIT,  	/* Clear all bits on exit. */
-										   &ulNotifiedValue, /* Stores the notified value. */
-										   0);				 /* Don't wait */
+					xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
+										   START_STOP_MEAS_BIT,  					/* Clear bit on exit. */
+										   &ulNotifiedValue, 						/* Stores the notified value. */
+										   0);				 						/* Don't wait */
 
 					  if( xResult == pdPASS )
 					  {
@@ -120,7 +117,7 @@ void SaveValuesSDTask(void *pvParameters){
 				else{
 					sdState = SD_STATE_BUFFER;
 				}
-				write_buf[0] = '\0';				/* reset buffer */
+				write_buf[0] = '\0';												/* reset buffer */
 				break;
 			case SD_STATE_CLOSEFILE:
 				 /* closing file */
@@ -132,23 +129,12 @@ void SaveValuesSDTask(void *pvParameters){
 	}
 }
 
-bool isFileSystemMounted(void){
-	return (FRTOS1_xSemaphoreTake(startSensorReadingSem, 0)==pdTRUE);
-}
-
 void startStopMeas(void){
 	FRTOS1_xTaskNotify(xHandlingSDTask, START_STOP_MEAS_BIT, eSetBits);
 }
 
 
 void SDCard_Init(void){
-	/* create semaphore which is given after file system is mounted */
-	startSensorReadingSem  = FRTOS1_xSemaphoreCreateBinary();
-	if(startSensorReadingSem == NULL){
-		for(;;);													/* error */
-	}
-	FRTOS1_vQueueAddToRegistry(startSensorReadingSem, "startSensorReadingSem");
-
 	/* create task */
 	if (FRTOS1_xTaskCreate(SaveValuesSDTask, (signed portCHAR *)"SaveOnSDCard", configMINIMAL_STACK_SIZE+600, NULL, tskIDLE_PRIORITY+1, &xHandlingSDTask) != pdPASS) {
 	      for(;;){} /* error */

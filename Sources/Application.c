@@ -6,7 +6,6 @@
  */
 
 #include "Application.h"
-#include "Error.h"
 #include "PE_Types.h"
 #include "RTOS.h"
 #include "Queue.h"

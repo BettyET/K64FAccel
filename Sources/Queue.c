@@ -6,7 +6,6 @@
  */
 
 #include "FRTOS1.h"
-#include "Error.h"
 #include "SDCard.h"
 #include "Queue.h"
 

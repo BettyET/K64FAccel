@@ -9,8 +9,5 @@
 #define SOURCES_APPLICATION_H_
 
 void APP_Init(void);
-void logAccData(void);
-
-
 
 #endif /* SOURCES_APPLICATION_H_ */

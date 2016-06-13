@@ -7,7 +7,6 @@
 #include "PE_Types.h"
 #include "ReadSensor.h"
 #include "H3LIS331DL.h"
-#include "Error.h"
 #include "Queue.h"
 #include "SDCard.h"
 #include "Trigger.h"
@@ -26,8 +25,6 @@ static uint16_t count_or;								/* number of overruns */
 bool detected;											/* high if shock event detected */
 
 static SensStateType sensState = SENS_STATE_INITACCEL; 	/* initial state */
-
-static xSemaphoreHandle startStopSensCalibSem = NULL;	/* do calibration */
 
 static TaskHandle_t xHandlingSensorTask;
 
@@ -68,7 +65,7 @@ void ReadAccelSensorTask(void *pvParameters){
 				sensState = SENS_STATE_STARTUP;
 			case SENS_STATE_STARTUP:
 				xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
-									   FILE_SYS_RDY_BIT,  						/* Clear bits on exit. */
+									   FILE_SYS_RDY_BIT,  						/* Clear bit on exit. */
 									   &ulNotifiedValue, 						/* Stores the notified value. */
 									   pdMS_TO_TICKS( 10 ));					/* Wait 10ms */
 
@@ -82,10 +79,10 @@ void ReadAccelSensorTask(void *pvParameters){
 				  }
 				  break;
 			case SENS_STATE_IDLE:
-			  xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-					  	  	  	  	   BTN2_BIT|BTN2_L_BIT,  /* Clear all bits on exit. */
-									   &ulNotifiedValue, /* Stores the notified value. */
-									   0);				 /* Don't wait */
+			  xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
+					  	  	  	  	   BTN2_BIT|BTN2_L_BIT,  					/* Clear bits on exit. */
+									   &ulNotifiedValue, 						/* Stores the notified value. */
+									   0);				 						/* Don't wait */
 
 				  if( xResult == pdPASS )
 				  {
@@ -94,6 +91,7 @@ void ReadAccelSensorTask(void *pvParameters){
 					 {
 						sensState = SENS_STATE_MEASURE;
 						readInt1Source();										/* clear interrupts */
+						WAIT1_Waitus(2);										/* strange sensor communication problem: need to wait */
 						LED_G_On();
 						startStopMeas();
 					 }
@@ -106,29 +104,28 @@ void ReadAccelSensorTask(void *pvParameters){
 				break;
 			case SENS_STATE_MEASURE:
 				if(isNewDataAvailable(Z_AXIS_DA)){								/* check if new data available */
-					WAIT1_Waitus(2);											/* strange sensor problem */
-					//logAccData();												/* read sensor and save on SD card */
+					WAIT1_Waitus(2);											/* strange sensor communication problem: need to wait */
 					int16_t z = getAccData();
-					WAIT1_Waitus(2);
+					WAIT1_Waitus(2);											/* strange sensor communication problem: need to wait */
 					if(readInt1Source()){
 						if(!detected){
 							detected = TRUE;
 							TRG_SetTrigger(TRG_DEL_DETECT, 200, &detectClear, NULL);
 							buzzerBeep();
-							z=z+10000;
+							z=z+10000;											/* shock detected: simply add 10'000 */
 						}
 					}
 					DATAQUEUE_SaveValue(z);										/* save in queue */
 				}
-				WAIT1_Waitus(2);
+				WAIT1_Waitus(2);												/* strange sensor communication problem: need to wait */
 				if(dataOverrun(Z_AXIS_OR)){										/* data overrun? */
 					count_or++;													/* count overruns */
 				}
-				WAIT1_Waitus(2);
-				xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-									   BTN2_BIT,  		 /* Clear all bits on exit. */
-									   &ulNotifiedValue, /* Stores the notified value. */
-									   0);				 /* Don't wait */
+				WAIT1_Waitus(2);												/* strange sensor communication problem: need to wait */
+				xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
+									   BTN2_BIT,  		 						/* Clear all bits on exit. */
+									   &ulNotifiedValue, 						/* Stores the notified value. */
+									   0);				 						/* Don't wait */
 				  if( xResult == pdPASS )
 				  {
 					 /* A notification was received.  See which bits were set. */
@@ -145,10 +142,10 @@ void ReadAccelSensorTask(void *pvParameters){
 				sensState = SENS_READ_POS_DIR;
 				break;
 			case SENS_READ_POS_DIR:												/* read acceleration positive direction */
-				xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-									   BTN3_BIT,  		 /* Clear all bits on exit. */
-									   &ulNotifiedValue, /* Stores the notified value. */
-									   pdMS_TO_TICKS( 60000 )); /* Wait 60 s*/
+				xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
+									   BTN3_BIT,  		 						/* Clear bit on exit. */
+									   &ulNotifiedValue, 						/* Stores the notified value. */
+									   pdMS_TO_TICKS( 60000 )); 				/* Wait 60 s*/
 				  if( xResult == pdPASS )
 				  {
 					 /* A notification was received.  See which bits were set. */
@@ -158,29 +155,29 @@ void ReadAccelSensorTask(void *pvParameters){
 							WAIT1_WaitOSms(2000);
 							blinkGreen();
 							for (int i = MEMORY_SIZE; i>0;i--){
-								WAIT1_Waitms(10);
-								accelMemory[i-1] = getRawData();						/* save values*/
-								accelSum += (int32_t)accelMemory[i-1];					/* add values */
+								WAIT1_WaitOSms(10);
+								accelMemory[i-1] = getRawData();				/* save values*/
+								accelSum += (int32_t)accelMemory[i-1];			/* add values */
 							}
-							accelPos = (uint16_t)(accelSum / MEMORY_SIZE);				/* calculate average */
-							LED_G_On();													/* turn the device */
+							accelPos = (uint16_t)(accelSum / MEMORY_SIZE);		/* calculate average */
+							LED_G_On();											/* turn the device */
 							WAIT1_WaitOSms(2000);
 							LED_G_Off();
 							sensState = SENS_READ_NEG_DIR;
 					 }
 				  }
-				  else{																	/* timeout */
+				  else{															/* timeout */
 					  blinkRed();
-					  sensState = SENS_STATE_IDLE;										/* back to idle */
+					  sensState = SENS_STATE_IDLE;								/* back to idle */
 				  }
 
 
 				break;
 			case SENS_READ_NEG_DIR:												/* read acceleration negative direction */
-				xResult = xTaskNotifyWait( pdFALSE,    	 /* Don't clear bits on entry. */
-									   BTN3_BIT,  		 /* Clear all bits on exit. */
-									   &ulNotifiedValue, /* Stores the notified value. */
-									   pdMS_TO_TICKS( 60000 )); /* Wait 60 s*/
+				xResult = xTaskNotifyWait( pdFALSE,    	 						/* Don't clear bits on entry. */
+									   BTN3_BIT,  		 						/* Clear bit on exit. */
+									   &ulNotifiedValue, 						/* Stores the notified value. */
+									   pdMS_TO_TICKS( 60000 )); 				/* Wait 60 s*/
 				  if( xResult == pdPASS )
 				  {
 					 /* A notification was received.  See which bits were set. */
@@ -190,22 +187,22 @@ void ReadAccelSensorTask(void *pvParameters){
 							WAIT1_WaitOSms(2000);
 							blinkBlue();
 							for (int i=MEMORY_SIZE; i>0;i--){
-								WAIT1_Waitms(10);
-								accelMemory[i-1] = getRawData();						/* save values*/
-								accelSum += (int32_t)accelMemory[i-1];					/* add values */
+								WAIT1_WaitOSms(10);
+								accelMemory[i-1] = getRawData();				/* save values*/
+								accelSum += (int32_t)accelMemory[i-1];			/* add values */
 							}
-							accelNeg = (int16_t)(accelSum / MEMORY_SIZE);				/* calculate average */
+							accelNeg = (int16_t)(accelSum / MEMORY_SIZE);		/* calculate average */
 							LED_B_On();
 							WAIT1_WaitOSms(2000);
-							LED_B_Off();												/* end of calibration */
-							gain = (accelPos- accelNeg)/2;				 				/* sensitivity */
-							zerGOff = accelPos-gain;					 				/* zero g offset */
+							LED_B_Off();										/* end of calibration */
+							gain = (accelPos- accelNeg)/2;				 		/* sensitivity */
+							zerGOff = accelPos-gain;					 		/* zero g offset */
 							sensState = SENS_STATE_IDLE;
 					 }
 				  }
-				  else{																	/* timeout */
+				  else{															/* timeout */
 					  blinkRed();
-					  sensState = SENS_STATE_IDLE;										/* back to idle */
+					  sensState = SENS_STATE_IDLE;								/* back to idle */
 				  }
 				break;
 		}
@@ -214,21 +211,21 @@ void ReadAccelSensorTask(void *pvParameters){
 }
 
 void blinkRed(void){
-	for(int i=8; i>0;i--){	/* start calibration modus */
+	for(int i=8; i>0;i--){
 		LED_R_Neg();
 		WAIT1_WaitOSms(100);
 	}
 }
 
 void blinkGreen(void){
-	for(int i=8; i>0;i--){	/* start calibration modus */
+	for(int i=8; i>0;i--){
 		LED_G_Neg();
 		WAIT1_WaitOSms(100);
 	}
 }
 
 void blinkBlue(void){
-	for(int i=8; i>0;i--){	/* start calibration modus */
+	for(int i=8; i>0;i--){
 		LED_B_Neg();
 		WAIT1_WaitOSms(100);
 	}
@@ -236,8 +233,8 @@ void blinkBlue(void){
 
 void logAccData(void){
 	  int16_t z = getAccData();
-	  DATAQUEUE_SaveValue(z);										/* save in queue */
-	  if ((z>gain) || (z< -gain)){									/* greater than 1g? */
+	  DATAQUEUE_SaveValue(z);													/* save in queue */
+	  if ((z>gain) || (z< -gain)){												/* greater than 1g? */
 		  LED_G_On();
 	  }
 	  else{

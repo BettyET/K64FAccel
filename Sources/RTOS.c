@@ -45,23 +45,12 @@ void myEvents(EVNT_Handle event)
 	{
 	case EVENT_BUTTON_2_PRESSED:
 		button2Pressed();
-//		if(getSensState()== SENS_STATE_MEASURE){
-//			setSensState(SENS_STATE_IDLE);
-//		}
-//		else if ((getSensState()== SENS_STATE_IDLE) && (getSDState()== SD_STATE_IDLE)){
-//			setSensState(SENS_STATE_MEASURE);
-//			setSDState(SD_STATE_OPENFILE);
-//		}
 		break;
 	case EVENT_BUTTON_2_LPRESSED:
 		button2LongPressed();
-//		setSensState(SENS_START_CALIB);
 		break;
 	case EVENT_BUTTON_3_PRESSED:
 		button3Pressed();
-//		if((getSensState() == SENS_READ_POS_DIR) || (getSensState() == SENS_READ_NEG_DIR)){
-//			doCalibrationStep();
-//		}
 		break;
 	}
 

@@ -7,7 +7,6 @@
 
 
 #include "H3LIS331DL.h"
-#include "Error.h"
 #include "CI2C1.h"
 #include "WAIT1.h"
 #include "PE_Types.h"
@@ -94,10 +93,10 @@ void readIfImMe(void){
 	/* Register lesen */
 	res = H3LI_ReadReg(WHO_AM_I, (uint8_t*)&me, 1);
 	if (res != ERR_OK){
-			for(;;);									/* error */
+			for(;;);								/* error */
 	}
-	if (me != 0x32){							/* error */
-		Err();
+	if (me != 0x32){
+		for(;;);									/* error */
 	}
 }
 
@@ -108,9 +107,9 @@ void setNormalPowerMode(void){
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
-	reg &= 0x1F;								/* mask */
-	reg |= 0x20;								/* normal power mode */
-	WAIT1_WaitOSms(1);
+	reg &= 0x1F;									/* mask */
+	reg |= 0x20;									/* normal power mode */
+	WAIT1_WaitOSms(1);								/* strange sensor communication problem: need to wait */
 	res = H3LI_WriteReg(CTRL_REG_1, reg);
 	if (res != ERR_OK){
 		for(;;);									/* error */
@@ -126,7 +125,7 @@ void setRange(RANGE_t rg){
 	}
 	reg &= 0xCF;									/* mask */
 	reg |= rg <<4;
-	WAIT1_WaitOSms(1);								/* strange error: need to wait short moment after reading a register before writing */
+	WAIT1_WaitOSms(1);								/* strange sensor communication problem: need to wait */
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
 	if (res != ERR_OK){
 		for(;;);									/* error */
@@ -140,9 +139,9 @@ void setSamplingRate(SRATE_t sr){
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
-	reg &= 0xE7;								/* mask */
+	reg &= 0xE7;									/* mask */
 	reg |= sr << 3;
-	WAIT1_WaitOSms(1);
+	WAIT1_WaitOSms(1);								/* strange sensor communication problem: need to wait */
 	res = H3LI_WriteReg(CTRL_REG_1, reg);
 	if (res != ERR_OK){
 		for(;;);									/* error */
@@ -156,9 +155,9 @@ void setBlockDataUpdate(void){
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
-	reg &= 0x7F;								/* mask */
+	reg &= 0x7F;									/* mask */
 	reg |= 0x80;
-	WAIT1_WaitOSms(1);
+	WAIT1_WaitOSms(1);								/* strange sensor communication problem: need to wait */
 	res = H3LI_WriteReg(CTRL_REG_4, reg);
 	if (res != ERR_OK){
 		for(;;);									/* error */
@@ -231,7 +230,7 @@ void setInt2Duration(uint8_t dur){
 	if(dur > 127){
 		dur = 127;
 	}
-	res = H3LI_WriteReg(NT2_DURATION, dur);				/* set threshold for low z event */
+	res = H3LI_WriteReg(NT2_DURATION, dur);			/* set threshold for low z event */
 	if (res != ERR_OK){
 		for(;;);									/* error */
 	}
@@ -245,7 +244,6 @@ uint8_t readInt1Source(void){
 		for(;;);								/* error */
 	}
 	reg &= 0x40;								/* mask */
-	WAIT1_Waitus(2);
 	return (reg);
 }
 
@@ -257,7 +255,6 @@ uint8_t readInt2Source(void){
 		for(;;);								/* error */
 	}
 	reg &= 0x40;								/* mask */
-	WAIT1_Waitus(2);
 	return (reg);
 }
 
@@ -267,7 +264,7 @@ bool isNewDataAvailable(AXES_DA_t ax){
 	uint8_t reg;
 	res = H3LI_ReadReg(STATUS_REG,(uint8_t*)&reg, 1);
 	if (res != ERR_OK){
-		for(;;);									/* error */
+		for(;;);								/* error */
 	}
 	reg &= ax;									/* mask */
 	return (reg == ax);
@@ -288,7 +285,7 @@ int16_t getRawData(void){
 	uint8_t res;
 	res = H3LI_ReadReg(OUT_Z_L_MSB, (int8_t*)&accelZ, 2);
 	if (res != ERR_OK){
-		for(;;);									/* error */
+		for(;;);								/* error */
 	}
 	return ((int16_t)accelZ[1]<<8)| ((int16_t)accelZ[0]);
 }
@@ -297,7 +294,7 @@ int16_t getRawData(void){
 void initH3LI(void){
 	initI2C();
 	readIfImMe();								/* communication correct? */
-	WAIT1_WaitOSms(1);
+	WAIT1_WaitOSms(1);							/* strange sensor communication problem: need to wait */
 	setNormalPowerMode();						/* normal power mode */
 	WAIT1_WaitOSms(1);
 	setRange(RANGE_200g);						/* range 200g */

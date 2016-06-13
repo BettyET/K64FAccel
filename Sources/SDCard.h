@@ -21,8 +21,6 @@ typedef enum {
 
 void startStopMeas(void);
 
-bool isFileSystemMounted(void);
-
 void SDCard_Init(void);
 
 void SaveValuesSDTask(void *pvParameters);
